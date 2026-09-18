@@ -1,0 +1,6 @@
+[package]
+name = "lecture-theme"
+version = "0.1.0"
+entrypoint = "lecture-theme.typ"
+authors = ["오영택 <ytoh@hoseo.edu>"]
+description = "호서대학교 강의용 공통 Typst 테마 (Metropolyst 기반)"
