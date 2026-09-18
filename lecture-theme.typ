@@ -37,9 +37,15 @@
 // em은 현재 글자 크기 기준, pt는 고정 크기이다.
 // 공통 변경은 이 사전을 편집하고, 강의·컴포넌트별 변경은 함수 옵션을 사용한다.
 // 강의에서 같은 이름의 사전을 새로 선언해도 이 파일의 기본값은 바뀌지 않는다.
-// 본문·코드·각주 글꼴 목록. 먼저 나오는 글꼴부터 fallback한다.
+// 본문·수식·코드·각주 글꼴 목록. 먼저 나오는 글꼴부터 fallback한다.
+// 수식은 주 수학 글꼴을 유지하고 한글 글리프만 본문 한글 글꼴로 fallback한다.
 #let font-defaults = (
   body: ("NanumSquareRound", "Noto Sans CJK KR", "Noto Sans KR"),
+  math: (
+    "New Computer Modern Math",
+    (name: "NanumSquareRound", covers: regex("[가-힣ㄱ-ㅎㅏ-ㅣ]")),
+    (name: "Noto Sans CJK KR", covers: regex("[가-힣ㄱ-ㅎㅏ-ㅣ]")),
+  ),
   code: ("D2Coding", "Noto Sans Mono CJK KR", "DejaVu Sans Mono"),
   footnote: ("KoPubWorldBatang", "Noto Sans CJK KR", "Noto Sans KR"),
 )
@@ -589,7 +595,7 @@
 // theme-options: Metropolyst 옵션 사전. 아래 기본값보다 우선한다.
 // 예: theme-options: (header-size: 1.2em, title-font: "Pretendard")
 // accent는 슬라이드 장식과 목록 색상이며 의미별 c-concept 등은 독립적이다.
-// font/code-font/footnote-font는 본문·코드·각주 글꼴을 각각 설정한다.
+// font/math-font/code-font/footnote-font는 본문·수식·코드·각주 글꼴을 각각 설정한다.
 // header/title/footer 전용 글꼴은 theme-options에서 지정한다.
 // 우선순위: slide-defaults < 이 함수에서 만든 Metropolyst 옵션 < theme-options.
 // theme-options.header-right/footer/footer-right로 로고나 번호 영역을 직접 대체할 수 있다.
@@ -606,6 +612,7 @@
   // none이면 기본 페이지 번호, 로고가 있으면 그 높이에 번호를 가운데 정렬한다.
   bottom-logo: none,
   font: font-defaults.body,
+  math-font: font-defaults.math,
   code-font: font-defaults.code,
   footnote-font: font-defaults.footnote,
   body-size: text-defaults.body-size,
@@ -681,6 +688,7 @@
     spacing: list-gap,
   )
   set strong(delta: strong-delta)
+  show math.equation: set text(font: math-font)
   show raw: set text(font: code-font)
   show footnote.entry: set text(font: footnote-font, size: footnote-size)
   body
