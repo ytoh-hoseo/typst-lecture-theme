@@ -134,6 +134,10 @@
 #let caution(body, weight: text-defaults.emphasis-weight) = text(fill: c-caution, weight: weight, body)
 #let muted(body) = text(fill: c-muted, body)
 
+// 벡터·행렬 표기 규약: 문자 종류는 입력에서 구분하고, 모두 정립 볼드로 표시한다.
+#let bvec(it) = math.bold(math.upright(it))
+#let bmat(it) = math.bold(math.upright(it))
+
 // 공통 아이콘. 예: #icon-pencil(color: c-meaning, size: 1.2em)
 // top-edge: bounds로 아이콘 글리프의 실제 윗부분을 정렬 기준으로 삼는다.
 // solid: false는 해당 아이콘에 regular 스타일이 있을 때 사용한다.
@@ -699,6 +703,14 @@
   )
   set strong(delta: strong-delta)
   show math.equation: set text(font: math-font)
+  // 행렬·열벡터는 대괄호로 표시하고, 작은 인라인 수식도 읽기 쉬운 크기로 유지한다.
+  set math.mat(delim: "[")
+  set math.vec(delim: "[")
+  show math.mat: it => math.display(it)
+  show math.vec: it => math.display(it)
+  show math.frac: it => math.display(it)
+  // 큰 인라인 수식의 실제 높이를 줄 간격에 반영한다.
+  show math.equation.where(block: false): set text(top-edge: "bounds", bottom-edge: "bounds")
   show raw: set text(font: code-font)
   show footnote.entry: set text(font: footnote-font, size: footnote-size)
   body
