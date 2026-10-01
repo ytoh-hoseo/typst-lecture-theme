@@ -184,6 +184,30 @@ bottom-logo: image("figs/meme-hoseo.jpg", height: 1em),
 #icon-panel(icon-name: "pencil", color: c-meaning)[직접 구성한 패널]
 ```
 
+### 세로 간격
+
+LaTeX와 유사한 이름으로 수동 세로 간격을 넣을 수 있습니다.
+
+| 함수 | 기본 간격 | 사용 예 |
+| --- | --- | --- |
+| `#smallskip()` | `.3em` | 설명과 수식 사이 |
+| `#medskip()` | `.6em` | 풀이 단계 사이 |
+| `#bigskip()` | `1.2em` | 내용 묶음 사이 |
+
+```typst
+*① 방향 벡터 구하기*
+$ d = P - M $
+
+#medskip()
+
+*② 정규화하기*
+$ hat(d) = d / norm(d) $
+```
+
+기본값은 `spacing-defaults`의 `smallskip`, `medskip`, `bigskip`에서 조절합니다.
+`em` 단위이므로 현재 글자 크기에 비례합니다. 내부적으로 `v(...)`를 사용하며,
+문단 간격을 대체하는 설정은 아닙니다. 추가 구분이 필요한 곳에 사용하세요.
+
 ### 목록·표·두 열
 
 - `spaced-list`: 전달한 블록 안의 목록 간격만 변경합니다.

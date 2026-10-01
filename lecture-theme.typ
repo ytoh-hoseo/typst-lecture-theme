@@ -57,7 +57,7 @@
   footnote-size: 12pt,
   strong-delta: 200,
 )
-// 문단 leading, 목록 간격, 열·아이콘 사이 간격.
+// 문단 leading, 목록 간격, 열·아이콘 사이 간격과 수동 세로 간격.
 #let spacing-defaults = (
   leading: .72em,
   list-gap: .8em,
@@ -67,6 +67,9 @@
   label-gap: .1em,
   column-gap: 1.2em,
   icon-gap: .35em,
+  smallskip: .3em,
+  medskip: .6em,
+  bigskip: 1.2em,
 )
 // 패널의 폭·내부 여백·선·모서리와 제목 간격.
 #let panel-defaults = (
@@ -152,7 +155,7 @@
 #let icon-youtube = icon.with("youtube", color: c-critical)
 
 // -----------------------------------------------------------------------------
-// 4. 정렬 축약
+// 4. 정렬·간격 축약
 // -----------------------------------------------------------------------------
 // align(center, body) 등을 매번 쓰지 않도록 하는 축약 함수.
 // center/left/right는 내장 alignment 값이라 그대로 함수 이름으로 쓰면 겹치므로
@@ -160,6 +163,14 @@
 #let hcenter(body) = align(center, body)
 #let hleft(body) = align(left, body)
 #let hright(body) = align(right, body)
+
+// LaTeX와 유사한 이름의 수동 세로 간격. 현재 글자 크기에 비례한다.
+// 예: #smallskip(), #medskip(), #bigskip()
+// v의 기본 동작을 따르며, 문단 사이 간격과는 별도로 필요할 때 사용한다.
+#let smallskip() = v(spacing-defaults.smallskip)
+#let medskip() = v(spacing-defaults.medskip)
+#let bigskip() = v(spacing-defaults.bigskip)
+
 
 // -----------------------------------------------------------------------------
 // 5. 목록과 표
