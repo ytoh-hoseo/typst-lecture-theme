@@ -236,13 +236,7 @@
   let style = note-style.get()
   let page-outer-margin = style.page-outer-margin
   let sidebar-gap = style.sidebar-gap
-  block(
-    above: par.spacing - measure(sym.zwj).height,
-    below: 0pt,
-    sticky: true,
-  )[
-    // 앞 문단의 간격은 유지하고, 다음 본문에는 붙여 함께 페이지를 이동합니다.
-    // 앵커 높이는 위 여백에서 빼고, 배경이 정상 출력되도록 블록 높이는 자동으로 둡니다.
+  let anchor = [
     #set par(leading: 0pt, spacing: 0pt)
     #marge.sidenote(
       sidenote-card(title, body, kind: kind),
@@ -252,6 +246,30 @@
       format: it => it.body,
     )
   ]
+
+  // 이 호출의 끝을 표시하여 카드 내부 문단을 제외한 다음 본문 요소를 찾습니다.
+  let marker-value = ("lecture-note/sidenote-end", title, body, kind)
+  let markers = query(metadata.where(value: marker-value).after(here()))
+  let next = if markers.len() > 0 {
+    query(selector(heading).or(par).or(math.equation).or(raw).or(table)
+      .after(markers.first().location()))
+  } else { () }
+  if next.len() > 0 and next.first().func() == heading {
+    // 제목 앞에서 블록을 끼우면 앞 제목의 below와 다음 제목의 above가
+    // 따로 누적됩니다. 공간을 차지하지 않는 배치로 원래 여백 병합을 보존합니다.
+    place(left, anchor)
+  } else {
+    // 일반 본문 앞에서는 앵커 높이만 상쇄하고 다음 본문과 페이지를 함께 이동합니다.
+    // height: 0pt는 카드의 배경·강조선을 지울 수 있으므로 자연 높이를 유지합니다.
+    block(
+      above: par.spacing,
+      below: 0pt,
+      inset: (bottom: -measure(sym.zwj).height),
+      sticky: true,
+      anchor,
+    )
+  }
+  metadata(marker-value)
 }
 
 #let code-spaces(count) = range(count).map(_ => " ").join()
