@@ -390,6 +390,8 @@
 // auto인 파생 설정은 이 문서에 전달된 글꼴·줄간격·너비에서 다시 계산합니다.
 // 사용 예:
 // #show: lecture-note.with(
+//   author: "작성자 이름",    // 선택 사항: 푸터 왼쪽
+//   date: datetime(year: 2026, month: 10, day: 27), // 선택 사항: 푸터 오른쪽
 //   body-font-size: 10pt,      // 본문 글자 크기
 //   paragraph-spacing: 1.5em, // 문단 사이 여백 (본문 글자 크기 기준)
 //   sidebar-width: 42mm,      // 사이드바 너비; 본문 너비는 자동으로 조정
@@ -399,8 +401,8 @@
   title: "",     // 문서 제목: 첫 페이지·머리말·PDF 메타데이터
   chapter: "",   // 머리말의 단계 이름 (예: M01)
   subtitle: "",  // 첫 페이지와 머리말의 부제
-  author: none,  // 푸터 왼쪽: 문자열 또는 콘텐츠
-  date: none,    // 푸터 오른쪽: 문자열·콘텐츠 또는 datetime (YYYY-MM-DD)
+  author: none,  // 푸터 왼쪽 작성자: 문자열·콘텐츠; none 또는 빈 값이면 숨김
+  date: none,    // 푸터 오른쪽 날짜: 문자열·콘텐츠 또는 datetime (YYYY-MM-DD)
   font: auto, // 호환용 별칭: 지정하면 body-font보다 우선
 
   // 글꼴과 본문 크기
@@ -517,8 +519,17 @@
         let footer-date = if type(date) == datetime {
           date.display("[year]-[month]-[day]")
         } else { date }
-        [#author #h(1fr) #counter(page).display("1") #h(1fr) #footer-date]
+        // 양쪽 열의 너비를 같게 하여 글자 길이에 관계없이 페이지 번호를 중앙에 둡니다.
+        grid(
+          columns: (1fr, auto, 1fr),
+          column-gutter: 8pt,
+          align: (left, center, right),
+          if has-author { author } else { [] },
+          counter(page).display("1"),
+          if has-date { footer-date } else { [] },
+        )
       } else {
+        // 작성자와 날짜를 생략한 기존 문서는 원래 푸터 배치를 유지합니다.
         [#h(1fr) #counter(page).display("1")]
       }
     })),
@@ -531,6 +542,8 @@
   show heading.where(level: 2): it => block(above: heading2-above, below: heading2-below, sticky: true)[
     #text(size: 11pt, weight: "bold", fill: ink)[#it.body]
   ]
+  // 링크의 이동 기능을 유지하면서 강조색으로 구분합니다.
+  show link: set text(fill: accent)
   show raw: set text(font: code-font)
   // 인라인 코드는 기본 80% 축소를 상쇄하여 주변 본문 크기로 표시합니다.
   show raw.where(block: false): set text(size: 1em / 0.8)
