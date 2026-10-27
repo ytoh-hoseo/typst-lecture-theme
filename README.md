@@ -3,9 +3,11 @@
 `lecture-theme.typ`는 Metropolyst 0.1.0을 사용하는 공통 테마입니다.
 강의 파일에서 가져와 사용하고, 강의별 정보와 본문은 강의 파일에 둡니다.
 
-이 테마는 Typst 로컬 패키지(`@local/lecture-theme:0.1.0`)로 설치되어 있어
+이 테마를 Typst 로컬 패키지(`@local/lecture-theme:0.1.0`)로 등록하면
 강의 파일 위치와 상관없이 아래처럼 바로 import할 수 있습니다.
 설치 방법은 이 문서 끝의 [로컬 패키지 설치](#로컬-패키지-설치)를 참고하세요.
+
+## 슬라이드에서 사용하기
 
 ```typst
 #import "@preview/metropolyst:0.1.0": *
@@ -28,7 +30,50 @@
 내용
 ```
 
-## 설정 위치
+## 강의 노트에서 사용하기
+
+하나의 패키지 안에 슬라이드 테마와 노트 템플릿을 함께 제공합니다.
+`typst.toml`의 진입점은 `lib.typ`이며, 슬라이드 함수들은 직접 공개하고
+노트 함수들은 `notes` 모듈로 묶어 공개합니다.
+
+노트 문서에서는 다음 두 줄로 노트 함수들을 가져옵니다.
+이후에는 `notes.` 접두어 없이 `lecture-note`, `medskip`, `sidenote` 등을 사용할 수 있습니다.
+
+```typst
+#import "@local/lecture-theme:0.1.0": notes
+#import notes: *
+
+#show: lecture-note.with(
+  title: [수학 노트],
+  subtitle: [갈릴레이의 바퀴에서 칸토어의 무한까지],
+  author: [오영택],
+  date: datetime.today(),
+  body-font: "KoPubWorldBatang",
+)
+
+= 무한에 관한 질문
+
+본문 내용
+
+#medskip()
+#sidenote[참고][본문 옆에 표시할 설명]
+```
+
+슬라이드와 노트에는 `medskip`, `bigskip`처럼 같은 이름의 보조 함수가 있습니다.
+노트 문서에서는 패키지 전체를 `*`로 가져오는 대신 위와 같이 `notes`만 선택하세요.
+노트의 보조 함수가 필요 없다면 템플릿만 직접 가져와도 됩니다.
+
+```typst
+#import "@local/lecture-theme:0.1.0": lecture-note
+```
+
+`author`와 `date`는 푸터의 왼쪽과 오른쪽에 표시되며, 그 사이에 페이지 번호가 들어갑니다.
+둘 다 생략하면 페이지 번호만 기존처럼 오른쪽에 표시됩니다.
+`date`는 문자열·콘텐츠 또는 `datetime`을 받으며, `datetime`은 `YYYY-MM-DD`로 표시합니다.
+사이드노트 없이 본문을 전체 너비로 쓰려면 `lecture-note.with`에
+`sidebar-width: 0mm, sidebar-gap: 0mm`를 지정하세요.
+
+## 슬라이드 설정 위치
 
 `title-slide`, `pause` 등 슬라이드 기능은 Metropolyst에서 직접 가져옵니다.
 이 테마는 해당 이름을 재공개하지 않습니다.
