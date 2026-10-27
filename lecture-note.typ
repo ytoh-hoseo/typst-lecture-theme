@@ -199,20 +199,30 @@
   align(left, block(width: content-width, body))
 }
 
-#let sidenote-card(title, body, caution: false) = context {
+// 종류별 색상: info는 문서의 accent/pale 설정을 따릅니다.
+// note는 보충 설명, caution은 주의, example은 예제에 사용합니다.
+#let sidenote-palette(kind, style) = {
+  let palettes = (
+    info: (accent: style.accent, fill: style.pale),
+    note: (accent: rgb("#75619b"), fill: rgb("#f3eff9")),
+    caution: (accent: rgb("#c1842a"), fill: rgb("#fff6e8")),
+    example: (accent: rgb("#34826a"), fill: rgb("#edf7f2")),
+  )
+  assert(kind in palettes, message: "sidenote kind는 info, note, caution, example 중 하나여야 합니다.")
+  palettes.at(kind)
+}
+
+#let sidenote-card(title, body, kind: "info") = context {
   let style = note-style.get()
-  let sidebar-font-size = style.sidebar-font-size
-  let sidebar-leading = style.sidebar-leading
-  let accent = style.accent
-  let pale = style.pale
+  let palette = sidenote-palette(kind, style)
   block(
     width: 100%,
     inset: 8pt,
-    fill: if caution { rgb("#fff6e8") } else { pale },
-    stroke: (left: 2pt + if caution { rgb("#c1842a") } else { accent }),
+    fill: palette.fill,
+    stroke: (left: 2pt + palette.accent),
   )[
-    #set text(size: sidebar-font-size)
-    #set par(leading: sidebar-leading, spacing: 0.6em)
+    #set text(size: style.sidebar-font-size)
+    #set par(leading: style.sidebar-leading, spacing: 0.6em)
     #text(weight: "bold")[#title]
     #v(5pt)
     #body
@@ -220,7 +230,9 @@
 }
 
 // 호출 위치를 기준으로 오른쪽에 배치하고, 겹침과 페이지 하단 처리는 marge에 맡깁니다.
-#let sidenote(title, body, caution: false) = context {
+// 사용 예: #sidenote(kind: "example")[계산 예제][예제 내용]
+// kind를 생략하면 info를 사용합니다. 주의 사항은 kind: "caution"으로 지정합니다.
+#let sidenote(title, body, kind: "info") = context {
   let style = note-style.get()
   let page-outer-margin = style.page-outer-margin
   let sidebar-gap = style.sidebar-gap
@@ -233,7 +245,7 @@
     // 앵커 높이는 위 여백에서 빼고, 배경이 정상 출력되도록 블록 높이는 자동으로 둡니다.
     #set par(leading: 0pt, spacing: 0pt)
     #marge.sidenote(
-      sidenote-card(title, body, caution: caution),
+      sidenote-card(title, body, kind: kind),
       side: right,
       padding: (left: sidebar-gap, right: page-outer-margin),
       gap: 4mm,
