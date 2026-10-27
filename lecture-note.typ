@@ -5,6 +5,7 @@
 // 기존 font:도 지원하며, 지정하면 body-font:보다 우선합니다.
 #let body-font = "Noto Serif KR"  // 본문 글꼴
 #let code-font = "D2Coding"  // 코드 글꼴
+#let math-font = "New Computer Modern Math"  // 수학 조판을 지원하는 글꼴 또는 글꼴 목록
 #let diagram-font = code-font  // 도식 글꼴; with에서 생략하면 code-font를 따름
 #let body-font-size = 9.5pt  // 본문 글자 크기
 
@@ -422,6 +423,7 @@
 // #show: lecture-note.with(
 //   author: "작성자 이름",    // 선택 사항: 푸터 왼쪽
 //   date: datetime(year: 2026, month: 10, day: 27), // 선택 사항: 푸터 오른쪽
+//   math-font: "New Computer Modern Math", // 수식 글꼴
 //   body-font-size: 10pt,      // 본문 글자 크기
 //   paragraph-spacing: 1.5em, // 문단 사이 여백 (본문 글자 크기 기준)
 //   sidebar-width: 42mm,      // 사이드바 너비; 본문 너비는 자동으로 조정
@@ -438,6 +440,7 @@
   // 글꼴과 본문 크기
   body-font: body-font, // 본문 글꼴
   code-font: code-font, // 코드 글꼴
+  math-font: math-font, // 수학 글꼴; 없는 글자는 본문 글꼴에서 찾음
   diagram-font: auto, // auto: code-font를 따름
   body-font-size: body-font-size, // 본문 글자 크기
 
@@ -572,6 +575,12 @@
   show heading.where(level: 2): it => block(above: heading2-above, below: heading2-below, sticky: true)[
     #text(size: 11pt, weight: "bold", fill: ink)[#it.body]
   ]
+  // 수학 기호는 지정한 수학 글꼴을, 그 글꼴에 없는 한글 설명은 본문 글꼴을 사용합니다.
+  // font: 별칭 또는 body-font:로 지정한 글꼴 목록도 그대로 반영합니다.
+  show math.equation: set text(
+    font: (if type(math-font) == array { math-font } else { (math-font,) })
+      + (if type(font) == array { font } else { (font,) }),
+  )
   // 링크의 이동 기능을 유지하면서 강조색으로 구분합니다.
   show link: set text(fill: accent)
   show raw: set text(font: code-font)
