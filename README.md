@@ -6,6 +6,32 @@
 이 테마를 Typst 로컬 패키지(`@local/lecture-theme:0.1.0`)로 등록하면
 강의 파일 위치와 상관없이 아래처럼 바로 import할 수 있습니다.
 설치 방법은 이 문서 끝의 [로컬 패키지 설치](#로컬-패키지-설치)를 참고하세요.
+노트 작성 중에는 [강의 노트 helper 참고표](#강의-노트-helper-참고표)에서 용도와 예제를 찾을 수 있습니다.
+
+## 공통 helper
+
+`common.typ`에는 슬라이드와 노트에서 함께 쓰는 함수만 정의합니다.
+두 템플릿이 이 함수들을 가져와 공개하므로 기존 import 방식은 그대로 사용할 수 있습니다.
+
+| 함수 | 용도 |
+| --- | --- |
+| `bvec`, `bmat` | 벡터·행렬 기호를 정립 볼드로 표시 |
+| `boxed` | 기본 테두리 `0.8pt`, 안쪽 여백 `6pt`인 박스 |
+| `hcenter`, `hleft`, `hright` | 콘텐츠를 가운데·왼쪽·오른쪽으로 정렬 |
+
+```typst
+// 템플릿 없이 공통 helper만 가져오는 경우
+#import "lecture-theme/common.typ": boxed, bvec, bmat, hcenter
+#hcenter[#boxed[$bvec(v) = bmat(A) bvec(x)$]]
+```
+
+슬라이드에서는 `lecture-theme.typ`, 노트에서는 `lecture-note.typ`에서 같은 이름으로 가져올 수 있습니다.
+로컬 패키지에서는 최상위와 `notes` 모듈 양쪽에서 제공됩니다.
+공통 helper는 외부 패키지나 템플릿 설정에 의존하지 않습니다.
+
+`medskip`·`bigskip`은 각 템플릿에 유지합니다. 슬라이드는 `.6em`·`1.2em`과
+`spacing-defaults`를 사용하고, 노트는 `8pt`·`16pt`와 문서별 `note-style` 설정을 사용하기 때문입니다.
+강조 패널·색상·글꼴·도식·사이드바 설정도 각 템플릿의 스타일에 맞춰 별도로 유지합니다.
 
 ## 슬라이드에서 사용하기
 
@@ -59,6 +85,53 @@
 #sidenote[참고][본문 옆에 표시할 설명]
 ```
 
+절 제목 번호는 `lecture-note.with(numbering-depth: 2)`처럼 지정합니다.
+기본값 `0`은 모든 단계의 번호를 숨기고, `1`은 `=`만, `2`는 `==`까지,
+`4`는 `====`까지 번호를 표시합니다. 기본 번호 형식은 `1`, `1.1`, `1.1.1`이며,
+`numbering-depth`에는 0 이상의 정수를 지정합니다.
+
+`numbering-by-level`에는 1단계부터 순서대로 번호 형식을 지정합니다.
+기본값은 빈 배열 `()`이며, 생략한 단계나 `auto`인 단계는 `"1.1"` 형식을 사용합니다.
+
+```typst
+#show: lecture-note.with(
+  numbering-depth: 3,
+  numbering-by-level: ("제1절", "1.1"),
+)
+```
+
+위 설정은 `제1절`, `1.1`, `1.1.1`로 표시됩니다.
+1단계만 지정하려면 `("제1절",)`처럼 쉼표를 붙이고,
+2단계만 바꾸려면 `(auto, "1.1)")`처럼 지정하세요.
+번호 형식은 Typst의 numbering 패턴 또는 함수를 받으며, 함수에는 상위 단계부터의 번호가 전달됩니다.
+`numbering-depth`를 넘는 단계에는 번호를 표시하지 않습니다.
+개별 제목의 `#heading(level: 1, numbering: "제1절")[제목]` 설정도 그대로 사용할 수 있습니다.
+
+`toc`를 가져오면 `#toc()`로 목차를 삽입할 수 있습니다.
+제목은 기본적으로 "목차"이며, 모든 단계의 제목과 페이지 번호, 이동 링크를 표시합니다.
+본문에 설정한 단계별 번호 형식도 그대로 반영합니다.
+
+```typst
+#import "lecture-theme/lecture-note.typ": lecture-note, toc
+// 패키지를 사용할 때는 #import notes: toc
+#toc()
+// #toc(depth: 2)              // 2단계까지만 표시
+// #toc(indent: 1em)           // 단계마다 1em 들여쓰기 (기본값: auto)
+// #toc(indent: 0pt)           // 들여쓰기 없음
+// #toc(title: [차례])         // 목차 제목 변경
+// #toc(title: none)           // 목차 제목 숨김
+```
+
+`outlined: false`인 제목은 목차에서 제외되며, 목차 제목 자체는 번호나 목차 항목에 포함되지 않습니다.
+
+간단한 테두리 박스는 `boxed`를 가져와 사용합니다. 기본 테두리는 `0.8pt`, 안쪽 여백은 `6pt`입니다.
+
+```typst
+#import "lecture-theme/lecture-note.typ": boxed
+#boxed[강조할 문장]
+#boxed(stroke: 1pt, inset: (x: 8pt, y: 4pt))[여백과 테두리 변경]
+```
+
 슬라이드와 노트에는 `medskip`, `bigskip`처럼 같은 이름의 보조 함수가 있습니다.
 노트 문서에서는 패키지 전체를 `*`로 가져오는 대신 위와 같이 `notes`만 선택하세요.
 노트의 보조 함수가 필요 없다면 템플릿만 직접 가져와도 됩니다.
@@ -72,6 +145,173 @@
 `date`는 문자열·콘텐츠 또는 `datetime`을 받으며, `datetime`은 `YYYY-MM-DD`로 표시합니다.
 사이드노트 없이 본문을 전체 너비로 쓰려면 `lecture-note.with`에
 `sidebar-width: 0mm, sidebar-gap: 0mm`를 지정하세요.
+
+## 강의 노트 helper 참고표
+
+이 절은 `lecture-note.typ`의 함수 설명입니다. 아래의 슬라이드 컴포넌트와는 별개입니다.
+강의 문서에서 필요한 이름을 가져오고 `lecture-note`를 적용한 뒤 사용하세요.
+다음 상대 경로 예시는 강의 문서 옆에 `lecture-theme` 폴더가 있는 구성을 기준으로 합니다.
+
+```typst
+#import "lecture-theme/lecture-note.typ": lecture-note, boxed, toc, callout, sidenote
+#show: lecture-note.with(title: [강의 노트])
+```
+
+로컬 패키지를 사용할 때는 `#import "@local/lecture-theme:0.1.0": notes` 다음에
+`#import notes: *`로 노트 함수를 모두 가져올 수 있습니다.
+
+| 함수 | 용도 | 기본값 / 주요 옵션 |
+| --- | --- | --- |
+| `boxed` | 짧은 문장·수식의 테두리 | `stroke: 0.8pt`, `inset: 6pt`; `box` 옵션 사용 가능 |
+| `bvec`, `bmat` | 벡터·행렬 기호를 정립 볼드로 표시 | 수식 안에서 `bvec(v)`, `bmat(A)` |
+| `hcenter`, `hleft`, `hright` | 수평 정렬 | `#hcenter[내용]`처럼 본문 전달 |
+| `toc` | 목차 | `title: [목차]`, `depth: none`, `indent: auto` |
+| `medskip`, `bigskip` | 세로 여백 | 각각 `8pt`, `16pt`; 인자 없음 |
+| `callout` | 제목 띠가 있는 강조 박스 | 제목·본문 필수, `caution: false` |
+| `sidenote` | 오른쪽 여백에 보충 설명 | 제목·본문 필수, `kind: "info"` |
+| `full-width` | 본문과 사이드바를 합친 너비 사용 | 본문 필수 |
+| `note-diagram` | 공통 스타일의 Fletcher 도식 | Fletcher의 노드·연결선·배치 옵션 전달 |
+| `uml-diagram` | UML 클래스 도식 | raw 콘텐츠 필수, `width: auto` → 기본 `145mm` |
+| `code-panel` | 출처·줄 번호가 있는 C++ 코드 | 제목·파일 경로 필수, 같은 이름의 JSON 필요 |
+| `command-panel` | 각 줄에 `$`가 붙는 명령 패널 | 제목·본문 필수 |
+
+### 테두리와 목차: boxed, toc
+
+```typst
+#boxed[강조할 문장]
+#align(center)[#boxed[$a^2 + b^2 = c^2$]]
+#boxed(stroke: 1pt, inset: (x: 8pt, y: 4pt))[옵션 변경]
+
+#toc()
+#toc(depth: 2, indent: 1em, title: [차례])
+#toc(title: none, indent: 0pt)
+```
+
+`boxed`는 내용 크기의 박스이며 가운데 정렬은 바깥의 `align(center)`로 지정합니다.
+`toc`의 `depth: none`은 모든 단계, `title: none`은 목차 제목 숨김입니다.
+`indent`에 길이를 주면 단계마다 해당 크기만큼 들여씁니다.
+
+### 벡터와 행렬 기호: bvec, bmat
+
+```typst
+#import "lecture-theme/lecture-note.typ": bvec, bmat
+
+$bvec(v) = bmat(A) bvec(x)$
+$bvec(v) = vec(1, 2, 3)$
+$bmat(A) = mat(1, 0; 0, 1)$
+```
+
+두 함수는 기호를 기울이지 않은 굵은 글자(정립 볼드)로 표시하며, 슬라이드와 노트에서 동일하게 사용할 수 있습니다.
+`bvec`는 벡터 기호, `bmat`는 행렬 기호를 나타내는 이름이며 내부 서식은 같습니다.
+성분을 나열하는 열벡터나 행렬 자체는 Typst의 `vec`, `mat`으로 작성합니다.
+로컬 패키지의 노트 모듈에서는 `#import notes: bvec, bmat`으로 가져올 수 있습니다.
+
+### 세로 여백: medskip, bigskip
+
+```typst
+앞의 설명
+
+#medskip()
+
+다음 설명
+
+#bigskip()
+
+새로운 내용 묶음
+```
+
+간격은 `lecture-note.with(medskip-size: 10pt, bigskip-size: 20pt)`로 변경합니다.
+이 함수는 추가 여백을 넣는 용도이며 본문 문단 간격은 `paragraph-spacing`으로 조절합니다.
+
+### 강조 박스와 사이드노트: callout, sidenote
+
+```typst
+#callout[핵심 개념][벡터는 크기와 방향을 가진다.]
+#callout(caution: true)[주의][영벡터는 정규화할 수 없다.]
+
+#sidenote[참고][추가 설명]
+#sidenote(kind: "note")[보충][관련 개념]
+#sidenote(kind: "caution")[주의][계산 시 주의할 점]
+#sidenote(kind: "example")[예제][$1 + 1 = 2$]
+```
+
+`callout`은 본문 너비의 강조 박스이고, `caution: true`이면 주황색 계열로 표시합니다.
+`sidenote`는 호출 위치에 맞춰 오른쪽 사이드바에 배치합니다.
+`kind`는 `"info"`(기본), `"note"`, `"caution"`, `"example"` 중 하나입니다.
+사이드노트를 사용하려면 `sidebar-width`에 공간을 확보하세요(기본 `40mm`).
+
+### 넓은 콘텐츠: full-width
+
+```typst
+#full-width[
+  #block(width: 100%, fill: luma(245), inset: 8pt)[넓은 설명 영역]
+]
+```
+
+본문과 사이드바를 합친 `content-width`만큼 공간을 사용합니다.
+같은 높이의 사이드노트와는 공간이 겹칠 수 있으므로 배치에 유의하세요.
+
+### 도식: note-diagram, uml-diagram
+
+```typst
+#import "@preview/fletcher:0.5.8": node, edge
+#note-diagram(
+  node((0, 0), [입력]),
+  node((1, 0), [출력]),
+  edge((0, 0), (1, 0), "->"),
+)
+```
+
+`note-diagram`은 공통 글꼴·색상을 적용하고 인자를 Fletcher의 `diagram`에 전달합니다.
+노드와 연결선은 Fletcher에서 가져오며, 마름모 도형은 노트 모듈의 `diamond`로도 가져올 수 있습니다.
+
+````typst
+#uml-diagram(width: 120mm, ```
+classDiagram
+  class Player {
+    +int hp
+    +move()
+  }
+```)
+````
+
+`uml-diagram`은 `classDiagram`으로 시작하는 raw 콘텐츠를 받습니다.
+너비를 생략하면 `lecture-note.with(uml-width: ...)`의 값을 사용합니다(기본 `145mm`).
+
+### 코드와 명령: code-panel, command-panel
+
+```typst
+#code-panel([이동 함수], "/snippets/move.cpp")
+```
+
+`code-panel`은 C++ 파일과 같은 경로의 `move.json`을 함께 읽습니다.
+경로를 `/`로 시작하면 Typst 프로젝트 루트를 기준으로 읽습니다.
+일반 상대 경로는 이 helper가 정의된 `lecture-note.typ`의 위치를 기준으로 해석됩니다.
+JSON에는 다음 필드가 필요하며, `ref`만 생략할 수 있습니다.
+
+```json
+{
+  "source": "src/player.cpp",
+  "start_line": 10,
+  "end_line": 12,
+  "ref": "v1.0"
+}
+```
+
+원본 줄 번호와 출처를 표시하고 C++ 구문 강조 및 들여쓰기 정리를 적용합니다.
+발췌 파일과 JSON은 미리 준비해야 합니다.
+
+````typst
+#command-panel[빌드 명령][
+  ```sh
+  cmake -S . -B build
+  cmake --build build
+  ```
+]
+````
+
+명령은 여러 줄 raw 코드 블록으로 넣으세요. 각 줄 앞의 `$`는 자동으로 붙습니다.
+명령을 실행하지 않고 문서에 표시합니다.
 
 ## 슬라이드 설정 위치
 

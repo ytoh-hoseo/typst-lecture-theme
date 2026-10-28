@@ -5,6 +5,7 @@
 //
 // 구성: 1. 팔레트 / 2. 기본값 / 3. 인라인 표현 / 4. 정렬 축약 / 5. 목록·표
 //       6. 밑줄·배경 강조 / 7. 패널 / 8. 아이콘 패널 / 9. 두 열 / 10. 문서 테마
+#import "common.typ": bvec, bmat, boxed, hcenter, hleft, hright
 #import "@preview/metropolyst:0.1.0" as metropolis
 #import "@preview/fontawesome:0.6.2": *
 
@@ -137,10 +138,6 @@
 #let caution(body, weight: text-defaults.emphasis-weight) = text(fill: c-caution, weight: weight, body)
 #let muted(body) = text(fill: c-muted, body)
 
-// 벡터·행렬 표기 규약: 문자 종류는 입력에서 구분하고, 모두 정립 볼드로 표시한다.
-#let bvec(it) = math.bold(math.upright(it))
-#let bmat(it) = math.bold(math.upright(it))
-
 // 공통 아이콘. 예: #icon-pencil(color: c-meaning, size: 1.2em)
 // top-edge: bounds로 아이콘 글리프의 실제 윗부분을 정렬 기준으로 삼는다.
 // solid: false는 해당 아이콘에 regular 스타일이 있을 때 사용한다.
@@ -157,12 +154,7 @@
 // -----------------------------------------------------------------------------
 // 4. 정렬·간격 축약
 // -----------------------------------------------------------------------------
-// align(center, body) 등을 매번 쓰지 않도록 하는 축약 함수.
-// center/left/right는 내장 alignment 값이라 그대로 함수 이름으로 쓰면 겹치므로
-// h(orizontal)를 붙였다. 예: #hcenter[본문]
-#let hcenter(body) = align(center, body)
-#let hleft(body) = align(left, body)
-#let hright(body) = align(right, body)
+// 정렬 축약 hcenter/hleft/hright는 common.typ에서 가져옵니다.
 
 // LaTeX와 유사한 이름의 수동 세로 간격. 현재 글자 크기에 비례한다.
 // 예: #smallskip(), #medskip(), #bigskip()

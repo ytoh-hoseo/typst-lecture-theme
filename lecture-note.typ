@@ -1,5 +1,23 @@
 // xyznote의 노트형 구성을 참고한 프로젝트 자체 템플릿입니다.
 // 본문·코드·도식의 공통 스타일을 관리합니다. 개별 도식은 사용하는 강의 문서에 둡니다.
+//
+// Helper 사용 설명: README.md의 "강의 노트 helper 참고표"
+// 필요한 함수는 이 파일에서 import한 뒤 사용합니다.
+//   #boxed[내용]                       테두리 0.8pt, 안쪽 여백 6pt
+//   #hcenter[내용] / #hleft[내용] / #hright[내용]  수평 정렬
+//   $bvec(v)$ / $bmat(A)$              벡터·행렬 기호를 정립 볼드로 표시
+//   #toc(depth: 2, indent: 1em)         목차
+//   #medskip() / #bigskip()             세로 여백 8pt / 16pt
+//   #callout[제목][본문]                 제목 띠가 있는 강조 박스
+//   #sidenote(kind: "note")[제목][본문]  오른쪽 사이드노트
+//   #full-width[내용]                   사이드바를 포함한 전체 너비
+//   #note-diagram(...)                  Fletcher 도식
+//   #uml-diagram(`classDiagram ...`)    UML 클래스 도식
+//   #code-panel([제목], "/snippets/example.cpp")  C++ 발췌 파일 + JSON 필요
+//   #command-panel[제목][```sh ...```]   명령 패널 (실제로는 여러 줄 코드 블록 사용)
+
+
+#import "common.typ": bvec, bmat, boxed, hcenter, hleft, hright
 
 // 아래 값은 기본값입니다. 문서별 변경은 lecture-note.with(설정명: 값)으로 지정합니다.
 // 기존 font:도 지원하며, 지정하면 body-font:보다 우선합니다.
@@ -31,6 +49,10 @@
 
 // 목록 항목 간격: auto는 Typst 기본값입니다. 4pt 등으로 바꾸면 직접 지정합니다.
 #let list-spacing = auto  // 목록 항목 간격; auto는 Typst 기본값
+
+// 절 제목 번호: 0은 번호 없음, 양의 정수는 번호를 표시할 최대 단계입니다.
+#let numbering-depth = 0
+#let numbering-by-level = () // 1단계부터 순서대로 번호 형식 지정; 생략 또는 auto는 "1.1"
 
 // 제목·도표·패널 내부 간격
 #let heading1-above = 24pt  // 1단계 절 제목 위 여백
@@ -91,6 +113,16 @@
   table-header: table-header,
   table-line: table-line,
 ))
+
+// 제목 번호·페이지 번호·이동 링크는 Typst의 outline을 사용합니다.
+// depth: none은 모든 단계, title: none은 목차 제목을 숨깁니다.
+// indent: auto는 자동 들여쓰기, 길이를 지정하면 단계마다 해당 크기만큼 들여씁니다.
+#let toc(title: [목차], depth: none, indent: auto) = {
+  if title != none {
+    heading(level: 1, numbering: none, outlined: false, title)
+  }
+  outline(title: none, depth: depth, indent: indent)
+}
 
 // 문서에서 의미 있는 단락 사이를 명시적으로 띄울 때 사용합니다.
 #let medskip() = context {
@@ -466,7 +498,9 @@
   diagram-leading: auto, // auto: body-leading을 따름
   list-spacing: list-spacing, // 목록 항목 간격; auto는 Typst 기본값
 
-  // 절 제목·캡션·패널 간격
+  // 절 제목 번호와 절 제목·캡션·패널 간격
+  numbering-depth: numbering-depth, // 0: 번호 없음, 1: 1단계만, 4: 4단계까지
+  numbering-by-level: numbering-by-level, // 예: ("제1절", "1.1"); 생략한 단계 또는 auto는 "1.1"
   heading1-above: heading1-above, // 1단계 절 제목 위 여백
   heading1-below: heading1-below, // 1단계 절 제목 아래 여백
   heading2-above: heading2-above, // 2단계 절 제목 위 여백
@@ -496,6 +530,14 @@
   table-line: table-line, // 표·패널 테두리 색
   body,
 ) = {
+  assert(type(numbering-depth) == int and numbering-depth >= 0,
+    message: "numbering-depth는 0 이상의 정수여야 합니다.")
+  assert(type(numbering-by-level) == array,
+    message: "numbering-by-level은 단계별 번호 형식의 배열이어야 합니다.")
+  for pattern in numbering-by-level {
+    assert(pattern == auto or type(pattern) == str or type(pattern) == function,
+      message: "단계별 번호 형식은 문자열, 함수 또는 auto여야 합니다.")
+  }
   let font = if font == auto { body-font } else { font }
   let diagram-font = if diagram-font == auto { code-font } else { diagram-font }
   let diagram-leading = if diagram-leading == auto { body-leading } else { diagram-leading }
@@ -568,12 +610,28 @@
     })),
   )
   // 본문 요소별 표시 규칙
-  set heading(numbering: "1.1")
+  set heading(numbering: none)
+  let numbered-headings = range(1, numbering-depth + 1).fold(
+    selector(heading.where(level: 0)),
+    (selected, level) => selected.or(heading.where(level: level)),
+  )
+  show numbered-headings: set heading(numbering: (..numbers) => {
+    let levels = numbers.pos()
+    let pattern = numbering-by-level.at(levels.len() - 1, default: auto)
+    numbering(if pattern == auto { "1.1" } else { pattern }, ..levels)
+  })
+  let heading-body(it) = context {
+    if it.numbering != none {
+      counter(heading).display(it.numbering)
+      h(0.3em)
+    }
+    it.body
+  }
   show heading.where(level: 1): it => block(above: heading1-above, below: heading1-below, sticky: true)[
-    #text(size: 18pt, weight: "bold", fill: accent)[#it.body]
+    #text(size: 18pt, weight: "bold", fill: accent)[#heading-body(it)]
   ]
   show heading.where(level: 2): it => block(above: heading2-above, below: heading2-below, sticky: true)[
-    #text(size: 11pt, weight: "bold", fill: ink)[#it.body]
+    #text(size: 11pt, weight: "bold", fill: ink)[#heading-body(it)]
   ]
   // 수학 기호는 지정한 수학 글꼴을, 그 글꼴에 없는 한글 설명은 본문 글꼴을 사용합니다.
   // font: 별칭 또는 body-font:로 지정한 글꼴 목록도 그대로 반영합니다.
