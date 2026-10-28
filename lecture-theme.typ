@@ -41,10 +41,11 @@
 // 본문·수식·코드·각주 글꼴 목록. 먼저 나오는 글꼴부터 fallback한다.
 // 수식은 주 수학 글꼴을 유지하고 한글 글리프만 본문 한글 글꼴로 fallback한다.
 #let font-defaults = (
-  body: ("NanumSquareRound", "Noto Sans CJK KR", "Noto Sans KR"),
+  body: ((name: "New Computer Modern Math", covers: regex("\\p{S}")), "NanumSquareRound", "Noto Sans KR", "Noto Sans CJK KR"),
   math: (
     "New Computer Modern Math",
     (name: "NanumSquareRound", covers: regex("[가-힣ㄱ-ㅎㅏ-ㅣ]")),
+    (name: "Noto Sans KR", covers: regex("[가-힣ㄱ-ㅎㅏ-ㅣ]")),
     (name: "Noto Sans CJK KR", covers: regex("[가-힣ㄱ-ㅎㅏ-ㅣ]")),
   ),
   code: ("D2Coding", "Noto Sans Mono CJK KR", "DejaVu Sans Mono"),
